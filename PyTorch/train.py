@@ -46,8 +46,18 @@ def train_net(net,
               patchnum=4,
               validationFrequency=4,
               dir_img='../dataset',
-              save_cp=True):
+              save_cp=True,
+              gdrive_path=None):
     dir_checkpoint = f'checkpoints_{fold}/'
+    # dir_checkpoint_gdrive = f'checkpoints_{fold}/'
+    if gdrive_path != None:
+        if gdrive_path[-1] != '/'
+            dir_checkpoint_gdrive = gdrive_path + '/' + dir_checkpoint
+            models_gdrive = gdrive_path + '/models/'
+        else:
+            dir_checkpoint_gdrive = gdrive_path + dir_checkpoint
+            models_gdrive = gdrive_path + 'models/'
+
     dataset = BasicDataset(dir_img, fold=fold, patch_size=patchsz, patch_num_per_image=patchnum, max_trdata=trimages)
     n_val = int(len(dataset) * val_percent)
     n_train = len(dataset) - n_val
@@ -158,18 +168,46 @@ def train_net(net,
             torch.save(net.state_dict(), dir_checkpoint + f'deep_WB_epoch{epoch + 1}.pth')
             logging.info(f'Checkpoint {epoch + 1} saved!')
 
+            """
+            Save checkpoints to Google Drive
+            """
+            if gdrive_path != None:
+                if not os.path.exists(dir_checkpoint_gdrive):
+                    os.mkdir(dir_checkpoint_gdrive)
+                    logging.info('Created checkpoint directory in Google Drive')
+
+                torch.save(net.state_dict(), dir_checkpoint_gdrive + f'deep_WB_epoch{epoch + 1}.pth')
+                logging.info(f'Checkpoint {epoch + 1} saved in Google Drive!')
+
     if not os.path.exists('models'):
         os.mkdir('models')
         logging.info('Created trained models directory')
-    torch.save(net.state_dict(), 'models/' + 'net.pth')
+    torch.save(net.state_dict(), 'models/' + 'net_wb.pth')
     logging.info('Saved trained model!')
-    logging.info('Saving each auto-encoder model separately')
+    # logging.info('Saving each auto-encoder model separately')
     # net_awb, net_t, net_s = splitter.splitNetworks(net)
     # torch.save(net_awb.state_dict(), 'models/' + 'net_awb.pth')
     # torch.save(net_t.state_dict(), 'models/' + 'net_t.pth')
     # torch.save(net_s.state_dict(), 'models/' + 'net_s.pth')
-    torch.save(net.state_dict(), 'models/' + 'net_wb.pth')
-    logging.info('Saved trained models!')
+    # torch.save(net.state_dict(), 'models/' + 'net_wb.pth')
+    # logging.info('Saved trained models!')
+
+    if gdrive_path != None:
+        if not os.path.exists(models_gdrive):
+            os.mkdir(models_gdrive)
+            logging.info('Created trained models directory in Google Drive')
+        torch.save(net.state_dict(), models_gdrive + 'net_wb.pth')
+        logging.info('Saved trained model in Google Drive!')
+        # logging.info('Saving each auto-encoder model separately')
+        # net_awb, net_t, net_s = splitter.splitNetworks(net)
+        # torch.save(net_awb.state_dict(), 'models/' + 'net_awb.pth')
+        # torch.save(net_t.state_dict(), 'models/' + 'net_t.pth')
+        # torch.save(net_s.state_dict(), 'models/' + 'net_s.pth')
+        # torch.save(net.state_dict(), 'models/' + 'net_wb.pth')
+        # logging.info('Saved trained models!')
+
+
+
     if use_tb:
         writer.close()
     logging.info('End of training')
@@ -258,6 +296,8 @@ def get_args():
                         help='Learning rate drop period')
     parser.add_argument('-trd', '--training_dir', dest='trdir', default='../dataset/',
                         help='Training image directory')
+    parser.add_argument('-gd', '--gdrive_path', dest='gdrive_path',
+                        help='Google Drive path')
 
     return parser.parse_args()
 
@@ -295,10 +335,14 @@ if __name__ == '__main__':
                   patchsz=args.patchsz,
                   patchnum=args.patchnum,
                   dir_img=args.trdir
-                  )
+                  gdrive_path=args.gdrive_path)
     except KeyboardInterrupt:
         torch.save(net.state_dict(), 'bkupCheckPoint.pth')
         logging.info('Saved interrupt checkpoint backup')
+
+        if gdrive_path != None:
+            torch.save(net.state_dict(), gdrive_path + 'bkupCheckPoint.pth')
+            logging.info('Saved interrupt checkpoint backup in Google Drive')
         try:
             sys.exit(0)
         except SystemExit:
