@@ -13,7 +13,7 @@ from torchvision import transforms
 import utilities.utils as utls
 
 
-def deep_wb(image, task='all', net_awb=None, net_t=None, net_s=None, device='cpu', s=656):
+def deep_wb(image, net_awb=None, device='cpu', s=656):
     # check image size
     image_resized = image.resize((round(image.width / max(image.size) * s), round(image.height / max(image.size) * s)))
     w, h = image_resized.size
@@ -39,80 +39,80 @@ def deep_wb(image, task='all', net_awb=None, net_t=None, net_s=None, device='cpu
     img = img.unsqueeze(0)
     img = img.to(device=device, dtype=torch.float32)
 
-    if task == 'all':
-        net_awb.eval()
-        net_t.eval()
-        net_s.eval()
-        with torch.no_grad():
-            output_awb = net_awb(img)
-            output_t = net_t(img)
-            output_s = net_s(img)
+    # if task == 'all':
+    #     net_awb.eval()
+    #     net_t.eval()
+    #     net_s.eval()
+    #     with torch.no_grad():
+    #         output_awb = net_awb(img)
+    #         output_t = net_t(img)
+    #         output_s = net_s(img)
+    #
+    #     tf = transforms.Compose([
+    #         transforms.ToPILImage(),
+    #         transforms.ToTensor()
+    #     ])
+    #
+    #     output_awb = tf(torch.squeeze(output_awb.cpu()))
+    #     output_awb = output_awb.squeeze().cpu().numpy()
+    #     output_awb = output_awb.transpose((1, 2, 0))
+    #     m_awb = utls.get_mapping_func(image_resized, output_awb)
+    #     output_awb = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_awb))
+    #
+    #     output_t = tf(torch.squeeze(output_t.cpu()))
+    #     output_t = output_t.squeeze().cpu().numpy()
+    #     output_t = output_t.transpose((1, 2, 0))
+    #     m_t = utls.get_mapping_func(image_resized, output_t)
+    #     output_t = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_t))
+    #
+    #     output_s = tf(torch.squeeze(output_s.cpu()))
+    #     output_s = output_s.squeeze().cpu().numpy()
+    #     output_s = output_s.transpose((1, 2, 0))
+    #     m_s = utls.get_mapping_func(image_resized, output_s)
+    #     output_s = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_s))
+    #
+    #     return output_awb, output_t, output_s
 
-        tf = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.ToTensor()
-        ])
+    # elif task == 'awb':
+    net_awb.eval()
+    with torch.no_grad():
+        output_awb = net_awb(img)
 
-        output_awb = tf(torch.squeeze(output_awb.cpu()))
-        output_awb = output_awb.squeeze().cpu().numpy()
-        output_awb = output_awb.transpose((1, 2, 0))
-        m_awb = utls.get_mapping_func(image_resized, output_awb)
-        output_awb = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_awb))
+    tf = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.ToTensor()
+    ])
 
-        output_t = tf(torch.squeeze(output_t.cpu()))
-        output_t = output_t.squeeze().cpu().numpy()
-        output_t = output_t.transpose((1, 2, 0))
-        m_t = utls.get_mapping_func(image_resized, output_t)
-        output_t = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_t))
+    output_awb = tf(torch.squeeze(output_awb.cpu()))
+    output_awb = output_awb.squeeze().cpu().numpy()
+    output_awb = output_awb.transpose((1, 2, 0))
+    m_awb = utls.get_mapping_func(image_resized, output_awb)
+    output_awb = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_awb))
 
-        output_s = tf(torch.squeeze(output_s.cpu()))
-        output_s = output_s.squeeze().cpu().numpy()
-        output_s = output_s.transpose((1, 2, 0))
-        m_s = utls.get_mapping_func(image_resized, output_s)
-        output_s = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_s))
+    return output_awb
 
-        return output_awb, output_t, output_s
-
-    elif task == 'awb':
-        net_awb.eval()
-        with torch.no_grad():
-            output_awb = net_awb(img)
-
-        tf = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.ToTensor()
-        ])
-
-        output_awb = tf(torch.squeeze(output_awb.cpu()))
-        output_awb = output_awb.squeeze().cpu().numpy()
-        output_awb = output_awb.transpose((1, 2, 0))
-        m_awb = utls.get_mapping_func(image_resized, output_awb)
-        output_awb = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_awb))
-
-        return output_awb
-
-    elif task == 'editing':
-        net_t.eval()
-        net_s.eval()
-        with torch.no_grad():
-            output_t = net_t(img)
-            output_s = net_s(img)
-
-        tf = transforms.Compose([
-            transforms.ToPILImage(),
-            transforms.ToTensor()
-        ])
-
-        output_t = tf(torch.squeeze(output_t.cpu()))
-        output_t = output_t.squeeze().cpu().numpy()
-        output_t = output_t.transpose((1, 2, 0))
-        m_t = utls.get_mapping_func(image_resized, output_t)
-        output_t = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_t))
-
-        output_s = tf(torch.squeeze(output_s.cpu()))
-        output_s = output_s.squeeze().cpu().numpy()
-        output_s = output_s.transpose((1, 2, 0))
-        m_s = utls.get_mapping_func(image_resized, output_s)
-        output_s = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_s))
-
-        return output_t, output_s
+    # elif task == 'editing':
+    #     net_t.eval()
+    #     net_s.eval()
+    #     with torch.no_grad():
+    #         output_t = net_t(img)
+    #         output_s = net_s(img)
+    #
+    #     tf = transforms.Compose([
+    #         transforms.ToPILImage(),
+    #         transforms.ToTensor()
+    #     ])
+    #
+    #     output_t = tf(torch.squeeze(output_t.cpu()))
+    #     output_t = output_t.squeeze().cpu().numpy()
+    #     output_t = output_t.transpose((1, 2, 0))
+    #     m_t = utls.get_mapping_func(image_resized, output_t)
+    #     output_t = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_t))
+    #
+    #     output_s = tf(torch.squeeze(output_s.cpu()))
+    #     output_s = output_s.squeeze().cpu().numpy()
+    #     output_s = output_s.transpose((1, 2, 0))
+    #     m_s = utls.get_mapping_func(image_resized, output_s)
+    #     output_s = utls.outOfGamutClipping(utls.apply_mapping_func(image, m_s))
+    #
+    #     return output_t, output_s

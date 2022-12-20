@@ -80,10 +80,10 @@ class BasicDataset(Dataset):
             base_name = base_name + parts[i] + '_'
         gt_awb_file = base_name + gt_ext[0]
         awb_img = Image.open(gt_awb_file)
-        gt_t_file = base_name + gt_ext[1]
-        t_img = Image.open(gt_t_file)
-        gt_s_file = base_name + gt_ext[2]
-        s_img = Image.open(gt_s_file)
+        # gt_t_file = base_name + gt_ext[1]
+        # t_img = Image.open(gt_t_file)
+        # gt_s_file = base_name + gt_ext[2]
+        # s_img = Image.open(gt_s_file)
         # get flipping option
         flip_op = np.random.randint(3)
         # get random patch coord
@@ -91,8 +91,8 @@ class BasicDataset(Dataset):
         patch_y = np.random.randint(0, high=h - self.patch_size)
         in_img_patches = self.preprocess(in_img, self.patch_size, (patch_x, patch_y), flip_op)
         awb_img_patches = self.preprocess(awb_img, self.patch_size, (patch_x, patch_y), flip_op)
-        img_t_patches = self.preprocess(t_img, self.patch_size, (patch_x, patch_y), flip_op)
-        img_s_patches = self.preprocess(s_img, self.patch_size, (patch_x, patch_y), flip_op)
+        # img_t_patches = self.preprocess(t_img, self.patch_size, (patch_x, patch_y), flip_op)
+        # img_s_patches = self.preprocess(s_img, self.patch_size, (patch_x, patch_y), flip_op)
         for j in range(self.patch_num_per_image - 1):
             # get flipping option
             flip_op = np.random.randint(3)
@@ -103,9 +103,9 @@ class BasicDataset(Dataset):
             in_img_patches = np.append(in_img_patches, temp, axis=0)
             temp = self.preprocess(awb_img, self.patch_size, (patch_x, patch_y), flip_op)
             awb_img_patches = np.append(awb_img_patches, temp, axis=0)
-            temp = self.preprocess(t_img, self.patch_size, (patch_x, patch_y), flip_op)
-            img_t_patches = np.append(img_t_patches, temp, axis=0)
-            temp = self.preprocess(s_img, self.patch_size, (patch_x, patch_y), flip_op)
-            img_s_patches = np.append(img_s_patches, temp, axis=0)
-        return {'image': torch.from_numpy(in_img_patches), 'gt-AWB': torch.from_numpy(awb_img_patches),
-                'gt-T': torch.from_numpy(img_t_patches), 'gt-S': torch.from_numpy(img_s_patches)}
+            # temp = self.preprocess(t_img, self.patch_size, (patch_x, patch_y), flip_op)
+            # img_t_patches = np.append(img_t_patches, temp, axis=0)
+            # temp = self.preprocess(s_img, self.patch_size, (patch_x, patch_y), flip_op)
+            # img_s_patches = np.append(img_s_patches, temp, axis=0)
+        return {'image': torch.from_numpy(in_img_patches), 'gt-AWB': torch.from_numpy(awb_img_patches)}#,
+                # 'gt-T': torch.from_numpy(img_t_patches), 'gt-S': torch.from_numpy(img_s_patches)}
