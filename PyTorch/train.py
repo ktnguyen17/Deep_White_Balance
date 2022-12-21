@@ -334,14 +334,14 @@ if __name__ == '__main__':
                   validationFrequency=args.val_frq,
                   patchsz=args.patchsz,
                   patchnum=args.patchnum,
-                  dir_img=args.trdir
+                  dir_img=args.trdir,
                   gdrive_path=args.gdrive_path)
     except KeyboardInterrupt:
         torch.save(net.state_dict(), 'bkupCheckPoint.pth')
         logging.info('Saved interrupt checkpoint backup')
 
-        if gdrive_path != None:
-            torch.save(net.state_dict(), gdrive_path + 'bkupCheckPoint.pth')
+        if args.gdrive_path != None:
+            torch.save(net.state_dict(), args.gdrive_path + 'bkupCheckPoint.pth')
             logging.info('Saved interrupt checkpoint backup in Google Drive')
         try:
             sys.exit(0)
