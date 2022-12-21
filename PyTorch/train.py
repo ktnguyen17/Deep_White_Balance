@@ -51,7 +51,7 @@ def train_net(net,
     dir_checkpoint = f'checkpoints_{fold}/'
     # dir_checkpoint_gdrive = f'checkpoints_{fold}/'
     if gdrive_path != None:
-        if gdrive_path[-1] != '/'
+        if gdrive_path[-1] != '/':
             dir_checkpoint_gdrive = gdrive_path + '/' + dir_checkpoint
             models_gdrive = gdrive_path + '/models/'
         else:
